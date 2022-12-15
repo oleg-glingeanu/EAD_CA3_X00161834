@@ -1,0 +1,1 @@
+C:\Users\olegg\source\repos\CA3_X00161834\CA3_X00161834\obj\Release\net6.0\browser-wasm\PubTmp\Out\web.config
