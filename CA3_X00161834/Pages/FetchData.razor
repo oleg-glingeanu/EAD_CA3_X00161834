@@ -1,0 +1,130 @@
+﻿@page "/fetchdata"
+@using CA3_X00161834.Coins
+@inject HttpClient Http
+@inject CoinsInterface CoinsService
+
+
+<PageTitle>Weather forecast</PageTitle>
+
+<h1>Fetch All Data for Coins</h1>
+
+<p>This component demonstrates fetching data from an API service.</p>
+
+<div>
+    @if (Coins == null)
+    {
+        <p><em>Loading...</em></p>
+    }
+    @if (sorted == true)
+    {
+        <input @bind-value="SearchTerm" @bind-value:event="oninput" />
+        <div class="form-check">
+            <input class="form-check-input" type="checkbox" value="" id="flexCheckDefault" onclick=@setCompleteStatus>
+            <label class="form-check-label" for="flexCheckDefault" onclick=@setCompleteStatus>
+                Sort Ascending by price
+            </label>
+        </div>
+        <div class="container">
+            <div class="row">
+                @foreach (var item in AscendingCoins)
+                {
+                    <div class="col-4">
+                        <div class="card w-100 h-100 p-3 mt-md-3">
+                            <img class="shadow-sm align-self-center bg-white rounded" src="@item.Image" width="350px" height="350px" />
+                            <div class="card-body ">
+                                <h5 class="card-title">@item.Name</h5>
+                                <p class="card-text">$@item.Value</p>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    }
+    @if (Coins != null && sorted == false)
+    {
+        <input @bind-value="SearchTerm" oninput=@filter />
+        <div class="form-check">
+            <input class="form-check-input" type="checkbox" value="" id="flexCheckDefault" onclick=@setCompleteStatus>
+            <label class="form-check-label" for="flexCheckDefault" onclick=@setCompleteStatus>
+                Sort Ascending by price
+            </label>
+        </div>
+        <div class="container">
+            <div class="row">
+                @foreach (var item in Coins)
+                {
+                    <div class="card" style="width: 18rem; padding:2rem; margin: 2rem;">
+                        <img src="@item.Image" class="card-img-top" alt="image">
+                        <div class="card-body">
+                            <h5 class="card-title">@item.Name</h5>
+                            <p class="card-text">@item.Value</p>
+                        </div>
+                    </div>
+                }
+            </div>
+        </div>
+    }
+    @if (filtered == true){
+        @foreach (var item in FilteredCoin)
+        {
+            <div class="card" style="width: 18rem; padding:2rem; margin: 2rem;">
+                <img src="@item.Image" class="card-img-top" alt="image">
+                <div class="card-body">
+                    <h5 class="card-title">@item.Name</h5>
+                    <p class="card-text">@item.Value</p>
+                </div>
+            </div>
+        }
+    }
+</div>
+@code {
+    string SearchTerm { get; set; } = "";
+    public List<CoinItem> Coins { get; set; }
+    public List<CoinItem> AscendingCoins { get; set; }
+    public bool sorted = false;
+    public bool filtered = false;
+    public string Error { get; set; }
+
+    public void setCompleteStatus()
+    {
+        Console.WriteLine("Sorted ");
+        if (sorted == true){
+            sorted = false;
+        } else{
+            sorted = true;
+        }
+        AscendingCoins = Coins.OrderBy(coin => coin.GetType().GetProperty("Value").GetValue(coin, null)).ToList();
+    }
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            Coins = await CoinsService.GetCoins();
+        }
+        catch (Exception e)
+        {
+            Error = e.Message;
+        }
+    }
+
+    //filter
+    List<CoinItem> FilteredCoin;
+
+    public void filter()
+    {
+        string searchTerm2 = SearchTerm;
+        Console.WriteLine("Filtered ");
+        if (filtered == true)
+        {
+            filtered = false;
+        }
+        else
+        {
+            filtered = true;
+        }
+        FilteredCoin = Coins.Where(i => i.Name.ToLower().Contains(searchTerm2.ToLower())).ToList();
+        
+    }
+}
